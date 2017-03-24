@@ -60,7 +60,7 @@ public class Packet
             checkSumPreFlip = msgByteArray[i];
         }
         
-        if(this.checksum + checkSumPreFlip != 0xFF) {
+        if(this.checksum + checkSumPreFlip != -1) {
             return true;
         } else {
             return false;
