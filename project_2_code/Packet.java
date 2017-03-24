@@ -18,7 +18,7 @@ public class Packet
         this.msg=msg;
         this.seqnum=seqnum;
         this.acknum=acknum;
-        this.checksum=checksum;
+        setChecksum();
         this.ran=new Random();
     }
 

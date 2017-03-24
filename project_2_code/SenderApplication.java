@@ -16,7 +16,7 @@ public class SenderApplication
         this.messages=messages;
         index=0;    
         
-        
+        st.setMessages(messages);
     }
     
     public SenderTransport getSenderTransport()
@@ -27,11 +27,9 @@ public class SenderApplication
     public void sendMessage()
     {
  
-        st.sendMessage(new Message(messages.get(index++)));
+        st.sendMessage(index, new Message(messages.get(index++)));
 
     }
-    
-
     
     
 
