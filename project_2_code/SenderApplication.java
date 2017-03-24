@@ -27,10 +27,15 @@ public class SenderApplication
     public void sendMessage()
     {
  
-        st.sendMessage(index, new Message(messages.get(index++)));
+        if(st.sendMessage(index, new Message(messages.get(index++)))) {
+        } else {
+            index--;
+        }
 
     }
     
     
-
+    public void decrementIndex() {
+        index--;
+    }
 }

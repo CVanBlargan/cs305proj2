@@ -26,7 +26,7 @@ public class SenderTransport
 
     }
 
-    public void sendMessage(int index,Message msg)
+    public boolean sendMessage(int index,Message msg)
     {
         if(usingTCP) { //using tcp
             if(index < lastReceivedAck +n + 1) { //falls in window size
@@ -39,10 +39,20 @@ public class SenderTransport
             if(index < lastReceivedAck+n){ //falls in window size
                 Packet newPacket = new Packet(msg, index,0,0);
                 nl.sendPacket(newPacket, 1);
+                System.out.println(index);
+                return true;
             }else {// not in window
-
+                //so now we're in this weird state where the timeline thinks the message
+                //has been sent but it couldn't be sent because it's outside of the window
+                
+                //you can try to create a new send event, but the problem is as far as timeline
+                //is concerned, "MessagesSent" indicates that all the messages have been sent.
+                
+                tl.createSendEvent();
+                return false;
             }
         }
+        return false;
     }
 
     public void receiveMessage(Packet pkt)
@@ -61,9 +71,10 @@ public class SenderTransport
         } else { //using GBN
             if(pkt.isCorrupt()) {
                 //ignore the message if it is corrupt
+                
             } else { //not corrupted
-                System.out.println("here");
-                lastReceivedAck = pkt.getSeqnum();
+                lastReceivedAck = pkt.getAcknum();
+                System.out.println(lastReceivedAck);
             }
 
         }
