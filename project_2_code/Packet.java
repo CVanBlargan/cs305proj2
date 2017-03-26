@@ -39,28 +39,32 @@ public class Packet
     
     public void setChecksum()
     {
-        byte[] msgByteArray = msg.getMessage().getBytes();
         
-        byte checkSumPreFlip = 0;
-        
-        for(int i = 0; i < msgByteArray.length; i++) {
-            checkSumPreFlip = msgByteArray[i];
+        char[] charArray = msg.getMessage().toCharArray();
+        int checksumCnt = 0;
+        for(int i = 0; i < charArray.length; i++) {
+            checksumCnt+=charArray[i];
         }
+        checksumCnt += acknum;
+        checksumCnt += seqnum;
         
-        this.checksum = ~checkSumPreFlip;
+        
+        this.checksum = checksumCnt;
     }
     
     public boolean isCorrupt()
     {
-        byte[] msgByteArray = msg.getMessage().getBytes();
         
-        byte checkSumPreFlip = 0;
-        
-        for(int i = 0; i < msgByteArray.length; i++) {
-            checkSumPreFlip = msgByteArray[i];
+        char[] charArray = msg.getMessage().toCharArray();
+        int checksumCnt = 0;
+        for(int i = 0; i < charArray.length; i++) {
+            checksumCnt+=charArray[i];
         }
+        checksumCnt += acknum;
+        checksumCnt += seqnum;
         
-        if(this.checksum + checkSumPreFlip != -1) {
+
+        if(this.checksum != checksumCnt) {
             return true;
         } else {
             return false;

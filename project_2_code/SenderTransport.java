@@ -10,8 +10,9 @@ public class SenderTransport
     private int n;
     private boolean usingTCP;
 
-    private int lastReceivedAck;
+    private int baseNumber;
     private int totalDups;
+    private int lastSendSeqNum;
 
     ArrayList<String> messages = null;
 
@@ -28,29 +29,28 @@ public class SenderTransport
 
     public boolean sendMessage(int index,Message msg)
     {
-        if(usingTCP) { //using tcp
-            if(index < lastReceivedAck +n + 1) { //falls in window size
-                Packet newPacket = new Packet(msg, index,0,0);
-                nl.sendPacket(newPacket, 1);
-            } else {//not in window
 
-            }
+        if((index >= messages.size()-1) || (index < baseNumber)) {
+            return false;
+        }
+
+        if(usingTCP) { //using tcp
+
         } else { //using GBN
-            if(index < lastReceivedAck+n){ //falls in window size
+            if(index < baseNumber+n){ //falls in window size
+                tl.startTimer(150);
                 Packet newPacket = new Packet(msg, index,0,0);
                 nl.sendPacket(newPacket, 1);
-                System.out.println(index);
+                System.out.println("Packet " + index + ": Was in window, sending");
+                lastSendSeqNum = index;
+                System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
                 return true;
             }else {// not in window
-                //so now we're in this weird state where the timeline thinks the message
-                //has been sent but it couldn't be sent because it's outside of the window
-                
-                //you can try to create a new send event, but the problem is as far as timeline
-                //is concerned, "MessagesSent" indicates that all the messages have been sent.
-                
                 tl.createSendEvent();
-                return false;
+                System.out.println("Packet " + index + ": Was not in window, not sending");
+                return true;
             }
+
         }
         return false;
     }
@@ -58,36 +58,46 @@ public class SenderTransport
     public void receiveMessage(Packet pkt)
     {
         if(usingTCP) {
-            if(pkt.getAcknum() == lastReceivedAck) {
-                totalDups++;
-            } else if (pkt.getAcknum() != lastReceivedAck) {
-                lastReceivedAck = pkt.getAcknum();
-            }
 
-            if(totalDups == 3) {
-                sendMessage(lastReceivedAck, new Message(messages.get(lastReceivedAck)));
-                totalDups = 0;
-            }
         } else { //using GBN
-            if(pkt.isCorrupt()) {
-                //ignore the message if it is corrupt
+            if(pkt.isCorrupt()) { //ignore the message if it is corrupt
+                System.out.println("Received corrupt ack");
+            } else if(!pkt.isCorrupt() && pkt.getAcknum() <baseNumber + n) { //if we receive an ack that is in the window
+                tl.stopTimer();
+                int amountShifted = pkt.getAcknum() - baseNumber + 1;
+                baseNumber = pkt.getAcknum()+1; //shift the entire window up, cumulative ack
                 
-            } else { //not corrupted
-                lastReceivedAck = pkt.getAcknum();
-                System.out.println(lastReceivedAck);
+                System.out.println("Received ack " + pkt.getAcknum() + ": that was in the window, cumulative ack, shift the window to new location");
+                System.out.println("Base Number is now: " + baseNumber);
+                System.out.println("Shifting the window: " + amountShifted + " packets.");
+
+                //this for loop is used to send all the new messages as a result of the shifted window
+                for(int i = lastSendSeqNum+1; i < lastSendSeqNum + amountShifted;i++) {
+                    if(i >= messages.size()-1) {
+                        break;
+                    }
+                    sendMessage(i,new Message(messages.get(i)));
+                }
+
+                if(lastSendSeqNum+(pkt.getAcknum()-baseNumber) + 1 > lastSendSeqNum) {
+                    lastSendSeqNum = lastSendSeqNum+(pkt.getAcknum()-baseNumber) + 1;
+                    System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
+                }
             }
-
         }
-
     }
 
     public void timerExpired()
     {
+        System.out.println("Timer Expired");
         if(usingTCP) {
 
         } else {
             for(int i = 0; i < n; i++) { //send the whole window size worth of packets
-                sendMessage(lastReceivedAck+1+i, new Message(messages.get(lastReceivedAck)));
+                if(baseNumber+i >= messages.size()-1) {
+                    break;
+                }
+                sendMessage(baseNumber + i, new Message(messages.get(baseNumber + i)));
             }
         }
     }
