@@ -37,6 +37,10 @@ public class Packet
         return msg;
     }
     
+    /**
+     * This method just takes the individual bytes of the message field, acknum field, and seqnum field and adds them all up.
+     * That is the checksum.
+     */
     public void setChecksum()
     {
         
@@ -52,6 +56,9 @@ public class Packet
         this.checksum = checksumCnt;
     }
     
+    /**
+     * All this method does is see if the checksum is the same when it reaches the side its intended to get to.  Uses the same process.
+     */
     public boolean isCorrupt()
     {
         
@@ -79,6 +86,8 @@ public class Packet
      */
     public void corrupt()
     {
+        
+        System.out.println("Corrupting packet " + (seqnum+acknum));
         if(ran.nextDouble()<0.75)
         {this.msg.corruptMessage();}
         else if(ran.nextDouble()<0.875)
