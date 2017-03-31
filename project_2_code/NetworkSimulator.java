@@ -39,6 +39,10 @@ public class NetworkSimulator
         rt.setProtocol(Integer.parseInt(args[5]));
         DEBUG = Integer.parseInt(args[6]);
         //this loop will run while there are events in the priority queue
+        
+        /**
+         * START TIMER HERE
+         */
         while(true)
         {
             //get next event
@@ -89,6 +93,10 @@ public class NetworkSimulator
             }
 
         }
+        
+        /**
+         * END TIMER HERE
+         */
     }
 
     //reading in file line by line.

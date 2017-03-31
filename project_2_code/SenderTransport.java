@@ -105,7 +105,10 @@ public class SenderTransport
                 System.out.println("Received corrupt ack");
                 tl.createSendEvent();
             } else if(!pkt.isCorrupt() && pkt.getAcknum() < baseNumber + n && pkt.getAcknum() > baseNumber) {
-                
+                //Receive Correct Message
+                /**
+                 * 
+                 */
             } else if(!pkt.isCorrupt() && pkt.getAcknum() == baseNumber){
                 //Handles the fast retransmit
                 totalDups++;
@@ -175,7 +178,7 @@ public class SenderTransport
              */
             for(int i = 0; i < n; i++) { //send the whole window size worth of packets
                 if(baseNumber+i >= messages.size()-1) {
-                    break;
+                    return;
                 }
                 sendMessage(baseNumber + i, new Message(messages.get(baseNumber + i)));
             }

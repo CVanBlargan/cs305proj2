@@ -43,7 +43,11 @@ public class ReceiverTransport
                 for(int i = 0; i < packetBuffer.size();i++) {
                     if(packetBuffer.get(i).getSeqnum() > pkt.getSeqnum()) {
                         packetBuffer.add(i, pkt);
+                        break;
+                    } else if(packetBuffer.get(i).getSeqnum() == pkt.getSeqnum()) {
+                        break;
                     }
+                    packetBuffer.add(pkt);
                 }
             } else {
                 System.out.println("Received an erroneous packet");
@@ -75,7 +79,7 @@ public class ReceiverTransport
                  * -corrupted packet in correct order
                  * -corrupted packet in incorrect order
                  */
-
+                
                 //send the lowest acked packet again
                 System.out.println("Received an erroneous packet");
                 Packet ackPacket = new Packet(new Message("Ack"), 0, lastInOrderPacketReceived, 0);
