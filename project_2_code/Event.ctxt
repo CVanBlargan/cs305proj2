@@ -1,13 +1,13 @@
 #BlueJ class context
 comment0.params=time\ type\ host
 comment0.target=Event(int,\ int,\ int)
-comment0.text=\n\ Initializing\ new\ event\ without\ packet.\ This\ will\ be\ used\ for\ sending\ events\n\ @param\ time\ time\ of\ event\n\ @param\ type\ type\ of\ event\n\ @param\ host\ where\ event\ is\ happening.\n
+comment0.text=\r\n\ Initializing\ new\ event\ without\ packet.\ This\ will\ be\ used\ for\ sending\ events\r\n\ @param\ time\ time\ of\ event\r\n\ @param\ type\ type\ of\ event\r\n\ @param\ host\ where\ event\ is\ happening.\r\n
 comment1.params=time\ type\ host\ pkt
 comment1.target=Event(int,\ int,\ int,\ Packet)
-comment1.text=\n\ Initializing\ new\ event\ with\ packet.\ This\ will\ be\ used\ for\ arriving\ events\n\ @param\ time\ time\ of\ event\n\ @param\ type\ type\ of\ event\n\ @param\ host\ where\ event\ is\ happening.\n\ @param\ pkt\ packet\ that\ is\ arriving.\n
+comment1.text=\r\n\ Initializing\ new\ event\ with\ packet.\ This\ will\ be\ used\ for\ arriving\ events\r\n\ @param\ time\ time\ of\ event\r\n\ @param\ type\ type\ of\ event\r\n\ @param\ host\ where\ event\ is\ happening.\r\n\ @param\ pkt\ packet\ that\ is\ arriving.\r\n
 comment2.params=
 comment2.target=void\ killTimer()
-comment2.text=\n\ Kills\ timer\ by\ simply\ setting\ its\ event\ type\ to\ KILLEDTIMER\n
+comment2.text=\r\n\ Kills\ timer\ by\ simply\ setting\ its\ event\ type\ to\ KILLEDTIMER\r\n
 comment3.params=
 comment3.target=int\ getTime()
 comment4.params=
