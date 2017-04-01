@@ -110,15 +110,27 @@ public class SenderTransport
                  * Move window, stop timer, 
                  */
                 tl.stopTimer();
+                int amountShifted = 1; //how many new packets to send
                 baseNumber = pkt.getAcknum() + 1;
                 System.out.println("Received ack " + pkt.getAcknum() + ": that was in the window, cumulative ack, shift the window to new location");
                 System.out.println("Base Number is now: " + baseNumber);
                 
+                for(int i = lastSendSeqNum; i < lastSendSeqNum + amountShifted;i++) {
+                    if(i >= messages.size() + 1) {
+                        break;
+                    }
+                    sendMessage(i,new Message(messages.get(i)));
+                }
+                 //This should be handled in send message already, but just in case?
+                if(lastSendSeqNum+(pkt.getAcknum()-baseNumber) + 1 > lastSendSeqNum) {
+                    lastSendSeqNum = lastSendSeqNum+(pkt.getAcknum()-baseNumber) + 1;
+                    System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
+                }
             } else if(!pkt.isCorrupt() && pkt.getAcknum() == baseNumber){
                 //Handles the fast retransmit
                 totalDups++;
                 if(totalDups == 3) {
-                    sendMessage(baseNumber, new Message(messages.get(baseNumber)));
+                    //sendMessage(baseNumber, new Message(messages.get(baseNumber)));
                     totalDups = 0;
                 }
             }

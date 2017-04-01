@@ -37,6 +37,7 @@ public class ReceiverTransport
                         packetBuffer.add(i, pkt);
                     }
                 }
+                
 
             } else if(!pkt.isCorrupt() && !(pkt.getSeqnum() == lastInOrderPacketReceived + 1)) { //if needs to be buffer
                 //This section puts the packets in the buffer in the correct order
@@ -63,7 +64,7 @@ public class ReceiverTransport
             }
 
             Packet ackPacket = new Packet(new Message("Ack"), 0, lastInOrderPacketReceived, 0);
-            
+            nl.sendPacket(ackPacket, 0);
         } else {//using GBN
 
             if(!pkt.isCorrupt() && pkt.getSeqnum() == lastInOrderPacketReceived + 1) { //if we receive the correct packet
