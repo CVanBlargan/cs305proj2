@@ -24,7 +24,7 @@ public class SenderTransport
 
     public void initialize()
     {
-
+        //clear messages array?
     }
 
     public boolean sendMessage(int index,Message msg)
@@ -39,7 +39,7 @@ public class SenderTransport
 
         if(usingTCP) { //using tcp
             
-            if(index < baseNumber+n && index >= baseNumber){ //falls in window size
+            if(index < baseNumber+n && index >= baseNumber){ //falls in window size   //break into seperate method?
                 tl.startTimer(150);
                 /*
                  * Create a new packet with proper sequence number. It is important to keep track
@@ -104,11 +104,16 @@ public class SenderTransport
                 //need to create new event to tell the timeline to try sending again
                 System.out.println("Received corrupt ack");
                 tl.createSendEvent();
-            } else if(!pkt.isCorrupt() && pkt.getAcknum() < baseNumber + n && pkt.getAcknum() > baseNumber) {
+            } else if(!pkt.isCorrupt() && pkt.getAcknum() < baseNumber + n && pkt.getAcknum() > baseNumber) {   //check if packet is in window
                 //Receive Correct Message
                 /**
-                 * 
+                 * Move window, stop timer, 
                  */
+                tl.stopTimer();
+                baseNumber = pkt.getAcknum() + 1;
+                System.out.println("Received ack " + pkt.getAcknum() + ": that was in the window, cumulative ack, shift the window to new location");
+                System.out.println("Base Number is now: " + baseNumber);
+                
             } else if(!pkt.isCorrupt() && pkt.getAcknum() == baseNumber){
                 //Handles the fast retransmit
                 totalDups++;
@@ -117,6 +122,7 @@ public class SenderTransport
                     totalDups = 0;
                 }
             }
+            
         } else { //using GBN
 
             /*
@@ -134,7 +140,8 @@ public class SenderTransport
                 tl.createSendEvent();
             } else if(!pkt.isCorrupt() &&
                         pkt.getAcknum() <baseNumber + n &&
-                        pkt.getAcknum() > baseNumber) { //if we receive an ack that is in the window
+                        pkt.getAcknum() > baseNumber) { 
+                //if we receive an ack that is in the window
                 //stop current timer (because cumulative ack means we received the proper one)
                 tl.stopTimer();
                 int amountShifted = pkt.getAcknum() - baseNumber + 1; //how many new packets to send
