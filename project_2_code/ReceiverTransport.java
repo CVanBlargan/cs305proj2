@@ -53,7 +53,7 @@ public class ReceiverTransport
                 System.out.println("Received an erroneous packet");
                 Packet ackPacket = new Packet(new Message("Ack"), 0, lastInOrderPacketReceived, 0);
                 nl.sendPacket(ackPacket, 0);
-
+                return;
             }
 
             //if there were packets in the buffer that can be passed up, pass them up and increase the base number
@@ -62,6 +62,8 @@ public class ReceiverTransport
                 lastInOrderPacketReceived = i;
             }
 
+            Packet ackPacket = new Packet(new Message("Ack"), 0, lastInOrderPacketReceived, 0);
+            
         } else {//using GBN
 
             if(!pkt.isCorrupt() && pkt.getSeqnum() == lastInOrderPacketReceived + 1) { //if we receive the correct packet
