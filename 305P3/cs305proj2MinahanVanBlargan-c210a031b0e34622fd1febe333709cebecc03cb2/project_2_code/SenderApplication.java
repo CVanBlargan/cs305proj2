@@ -26,16 +26,17 @@ public class SenderApplication
 
     public void sendMessage()
     {
-
-        
-        if(st.sendMessage(index, new Message(messages.get(index++)))) {
-        } else {
-            index--;
+        if(index < messages.size()) {
+            if(st.sendMessage(index, new Message(messages.get(index++)))) {
+            } else {
+                index--;
+            }
         }
-        
+
         //st.sendMessage(index, new Message(messages.get(index++)));
 
     }
+
     public void decrementIndex() {
         index--;
     }
