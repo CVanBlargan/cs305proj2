@@ -33,13 +33,12 @@ public class SenderTransport
          * some reason, don't send a message because it doesn't exist.
          */
         if((index > messages.size()) || (index < baseNumber)) {
-            //tl.createSendEvent();
             return false;
         }
 
         if(usingTCP) { //using tcp
 
-            if(index+1 < baseNumber+n && index+1 >= baseNumber){ //falls in window size
+            if(index + 1 < baseNumber + n && index + 1 >= baseNumber){ //falls in window size
                 tl.startTimer(150);
                 /*
                  * Create a new packet with proper sequence number. It is important to keep track
@@ -50,17 +49,13 @@ public class SenderTransport
                  */
                 Packet newPacket = new Packet(msg, index,0,0);
                 nl.sendPacket(newPacket, 1);
-                System.out.println("Packet " + index + ": Was in window, sending");
+                System.out.println("Packet " + index + ": Was in window, sending" + "  Last sent: " + lastSendSeqNum);
                 if(index > lastSendSeqNum) {
                     lastSendSeqNum = index;
                     System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
                 }
                 return true;
             }else {// not in window
-                /*
-                 * Create a send event because the timeline will have to try again later
-                 */
-                //tl.createSendEvent();
                 System.out.println("Packet " + index + ": Was not in window, not sending");
                 return false;
             }

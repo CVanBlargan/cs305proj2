@@ -26,7 +26,7 @@ public class ReceiverTransport
     {
         if(usingTCP) { //using tcp
             if(!pkt.isCorrupt() && 
-            pkt.getSeqnum() == lastInOrderPacketReceived + 1) { //if in the correct order
+                pkt.getSeqnum() == lastInOrderPacketReceived + 1) { //if in the correct order
                 ra.receiveMessage(pkt.getMessage()); //send the message up to the application
                 if(pkt.getSeqnum() >lastInOrderPacketReceived) {
                     lastInOrderPacketReceived = pkt.getSeqnum(); //increase base pointer
@@ -100,22 +100,15 @@ public class ReceiverTransport
 
             //if there were packets in the buffer that can be passed up, pass them up and increase the base number
             System.out.println("Giving any relevant messages to the Receiver Application Layer");
-            for(int i = lastInOrderPacketReceived; i < packetBuffer.size(); i++) {
-                if(i != -1) {
+            System.out.println("lastinOrder: " + lastInOrderPacketReceived +" size: " + packetBuffer.size());
+            if(pkt.getSeqnum() == lastInOrderPacketReceived + 1){   //if packet received was intended/in order
+                int i = pkt.getSeqnum() + 1;
+                while(packetBuffer.get(i).getSeqnum() == i){
                     ra.receiveMessage(packetBuffer.get(i).getMessage());
-                    System.out.println("Giving packet number : " + packetBuffer.get(i).getSeqnum() + " to the application layer");
-                    lastInOrderPacketReceived = i;
-                    System.out.println("Adjusting lastInOrderPacketReceived to " + i);
-                }
-
-                //EX if the buffer looks like 2,3,5, stops after sending 3.
-                if(i+1 < packetBuffer.size()) {
-                    if(packetBuffer.get(i+1).getSeqnum() > packetBuffer.get(i).getSeqnum()) {
-                        break;
-                    }
-                }
+                    i++;
+                 }
+                lastInOrderPacketReceived = i;
             }
-
             System.out.println("Sending an Ack with ackNum: " + (lastInOrderPacketReceived+1));
             Packet ackPacket = new Packet(new Message("Ack"), 0, lastInOrderPacketReceived+1, 0);
             nl.sendPacket(ackPacket, 0);
