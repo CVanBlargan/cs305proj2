@@ -19,7 +19,6 @@ public class SenderTransport
     public SenderTransport(NetworkLayer nl){
         this.nl=nl;
         initialize();
-
     }
 
     public void initialize()
@@ -28,6 +27,7 @@ public class SenderTransport
 
     public boolean sendMessage(int index,Message msg)
     {
+        tl.startTimer(150);
         /*
          * Regardless of protocol, if you are told to send a message that doesn't exist for
          * some reason, don't send a message because it doesn't exist.
@@ -39,7 +39,7 @@ public class SenderTransport
         if(usingTCP) { //using tcp
 
             if(index + 1 < baseNumber + n && index + 1 >= baseNumber){ //falls in window size
-                tl.startTimer(150);
+                //tl.startTimer(150);
                 /*
                  * Create a new packet with proper sequence number. It is important to keep track
                  * of the last sent sequence number because when you shift the window after receiving
@@ -86,7 +86,7 @@ public class SenderTransport
     public void receiveMessage(Packet pkt)
     {        
         if(usingTCP) {
-
+            tl.startTimer(150);
             /*
              * Didn't really start TCP.  It's going to have to get acks in a totally different
              * way from GBN because it won't be cumulative I don't think.  So if the window is
@@ -146,7 +146,7 @@ public class SenderTransport
                     lastSendSeqNum = lastSendSeqNum+(pkt.getAcknum()-baseNumber)-1;
                     System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
                 }
-
+                tl.startTimer(150);
             } else if(!pkt.isCorrupt()){
                 //Handles the fast retransmit
                 totalDups++;
