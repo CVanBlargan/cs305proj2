@@ -33,8 +33,6 @@ public class SenderApplication
             }
         }
 
-        //st.sendMessage(index, new Message(messages.get(index++)));
-
     }
 
     public void decrementIndex() {
