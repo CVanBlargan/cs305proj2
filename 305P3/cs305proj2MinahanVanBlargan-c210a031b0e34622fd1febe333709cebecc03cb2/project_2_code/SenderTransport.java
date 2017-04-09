@@ -19,6 +19,7 @@ public class SenderTransport
     public SenderTransport(NetworkLayer nl){
         this.nl=nl;
         initialize();
+
     }
 
     public void initialize()
@@ -33,13 +34,15 @@ public class SenderTransport
          * some reason, don't send a message because it doesn't exist.
          */
         if((index > messages.size()) || (index < baseNumber)) {
+            //System.out.println("Was told to send a message that either doesn't exist or was below window size");
+            //System.out.println("Index of " + index);
+            //System.out.println("Current Base Number " + baseNumber);
             return false;
         }
 
         if(usingTCP) { //using tcp
 
             if(index + 1 < baseNumber + n && index + 1 >= baseNumber){ //falls in window size
-                //tl.startTimer(150);
                 /*
                  * Create a new packet with proper sequence number. It is important to keep track
                  * of the last sent sequence number because when you shift the window after receiving
@@ -68,15 +71,11 @@ public class SenderTransport
              */
 
             if(index < baseNumber+n && index >= baseNumber){ //falls in window size
-                tl.startTimer(150);
                 Packet newPacket = new Packet(msg, index,0,0);
                 nl.sendPacket(newPacket, 1);
                 System.out.println("Packet " + index + ": Was in window, sending");
-                lastSendSeqNum = index;
-                System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
                 return true;
             }else {// not in window
-                //tl.createSendEvent();
                 System.out.println("Packet " + index + ": Was not in window, not sending");
                 return false;
             }
@@ -86,25 +85,17 @@ public class SenderTransport
     public void receiveMessage(Packet pkt)
     {        
         if(usingTCP) {
-            tl.startTimer(150);
-            /*
-             * Didn't really start TCP.  It's going to have to get acks in a totally different
-             * way from GBN because it won't be cumulative I don't think.  So if the window is
-             * 2,3,4 and we have acks for 3,4, we still need to get the ack for 2 before we can move
-             * That'll be hard using the same system as GBN because the BaseNumber defines what you
-             * should get, and you have no information for what you've gotten.  Essentially, though
-             * this part should be similar to the buffering done in the receiver transport for TCP
-             */
+
             if(pkt.isCorrupt()) {
                 //need to create new event to tell the timeline to try sending again
                 System.out.println("Received corrupt ack");
                 System.out.println("Was expecting an ack number that fell within the range of " + (baseNumber +1) + " and " + (baseNumber + n+1));
-                //tl.createSendEvent();
             } else if(!pkt.isCorrupt() 
             && pkt.getAcknum()-1 <= baseNumber + n 
             && pkt.getAcknum()-1 >= baseNumber) {
                 //Receive Correct Message
                 tl.stopTimer();
+                totalDups = 0;
                 /*
                  * So, for example, if your base number is 4, that means you should be expecting
                  * ack 5.  If you get ack five, you need to shift acknum - basenumber.
@@ -172,14 +163,12 @@ public class SenderTransport
              * scenario, you create a bunch of send events that die and don't do anything)
              */
             if(pkt.getAcknum() >= baseNumber) {
-                //tl.createSendEvent();
             }
 
             if(pkt.isCorrupt()) { //ignore the message if it is corrupt
                 //need to create new event to tell the timeline to try sending again
                 System.out.println("Received corrupt ack");
                 System.out.println("Was expecting an ack number that fell within the range of " + (baseNumber) + " and " + (baseNumber + n));
-                //tl.createSendEvent();
             } else if(!pkt.isCorrupt() &&
             pkt.getAcknum() <= baseNumber + n &&
             pkt.getAcknum() >= baseNumber) { //if we receive an ack that is in the window
@@ -194,24 +183,23 @@ public class SenderTransport
                 System.out.println("Shifting the window: " + amountShifted + "packets.");
 
                 //this for loop is used to send all the new messages as a result of the shifted window
-                for(int i = lastSendSeqNum+1; i < lastSendSeqNum + amountShifted;i++) {
-                    if(i >= messages.size()) {
+                int protoLastSendSeqNum = lastSendSeqNum;
+                for(int i = lastSendSeqNum; i < lastSendSeqNum + amountShifted;i++) {
+                    if(i+1 >= messages.size()) {
                         break;
                     }
-                    System.out.println("Sending packet number " + i + " because of window shift");
-                    sendMessage(i,new Message(messages.get(i)));
+                    System.out.println("Sending packet number " + (i+1) + " because of window shift");
+                    sendMessage(i+1,new Message(messages.get(i+1)));
+                    protoLastSendSeqNum = i+1;
                 }
-
-                //This should be handled in send message already, but just in case?
-                if(lastSendSeqNum+(pkt.getAcknum()-baseNumber) + 1 > lastSendSeqNum) {
-                    lastSendSeqNum = lastSendSeqNum+(pkt.getAcknum()-baseNumber) + 1;
-                    System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
-                }
+                
+                lastSendSeqNum = protoLastSendSeqNum;
+                System.out.println("Adjusting lastSendSeqNum to: " + lastSendSeqNum);
+                
             } else {
                 System.out.println("Received an ack that was outside of the window");
                 System.out.println("Expected an acknumber between " + baseNumber + " and " + (baseNumber+n));
                 System.out.println("Received ack had an acknumber of " + pkt.getAcknum());
-                //tl.createSendEvent();
             }
         }
     }
